@@ -152,6 +152,9 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .abar .htx b{font-weight:600}
 .abar .htx .sep{color:var(--muted)}
 .abar .htx.sub{font-weight:500;color:var(--muted)}
+.abar.inline{flex:1;justify-content:flex-start}
+.abar.inline .htx{flex:0 1 auto}
+.abar.inline .getchip{margin-right:auto}
 .abar:hover .htx{text-decoration:underline;text-underline-offset:3px}
 .abar.static:hover .htx{text-decoration:none}
 .getchip{background:var(--wix);color:var(--on-wix);border-radius:999px;padding:4px 11px;font-weight:600;font-size:12.5px;white-space:nowrap}
@@ -220,6 +223,7 @@ body.present .foot{display:none}
   <label>Concept <select id="concept"></select></label>
   <label>Variant <select id="variant"></select></label>
   <label>Copy <select id="copy"></select></label>
+  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="right">Button on the right (as is)</option><option value="inline">Button next to the text</option><option value="rightLong">Button on the right · “Claim Domain”</option></select></label>
   <label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <button class="b" data-act="how">How it works</button>
   <button class="b" data-act="spec">Spec</button>
@@ -340,7 +344,7 @@ const HOW={
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
   ]
 };
-const S={concept:'chat',variant:'card',copy:'perfect',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
+const S={concept:'chat',variant:'card',copy:'perfect',hdr:'right',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
 let saved=null;
 
 /* ---------- helpers ---------- */
@@ -438,9 +442,9 @@ function renderPane(){
   if(isAddr){
     const line=S.stage==='connected'?`<span class="htx">${esc(S.chosen)}</span><span class="pill ok">Connected</span>`
       :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
-      :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button>`;
+      :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'?' Domain':''}</button>`;
     const opens=barOpens&&S.stage==='idle';
-    head=`<div class="whead"><div class="abar ${opens?'':'static'}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead"><div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
@@ -494,6 +498,7 @@ function renderBar(){
   const cs=$('#concept'); cs.innerHTML=Object.entries(CONCEPTS).map(([k,c])=>`<option value="${k}" ${k===S.concept?'selected':''}>${esc(c.label)}</option>`).join('');
   const vs=$('#variant'); vs.innerHTML=Object.entries(CONCEPTS[S.concept].variants).map(([k,v])=>`<option value="${k}" ${k===S.variant?'selected':''}>${esc(v.label)}</option>`).join('');
   const cp=$('#copy'); cp.innerHTML=Object.entries(COPY).map(([k,c])=>`<option value="${k}" ${k===S.copy?'selected':''}>${esc(c.label)}</option>`).join('');
+  $('#hdrwrap').hidden=!((S.concept==='pane'&&(S.variant==='address'||S.variant==='addressWidget'))||S.concept==='both'); $('#hdr').value=S.hdr;
   $('#cnote').textContent=CONCEPTS[S.concept].variants[S.variant].note;
   $('#panename').textContent='Wix site';
 }
@@ -561,6 +566,7 @@ document.addEventListener('submit',e=>{
 });
 $('#concept').addEventListener('change',e=>{ S.concept=e.target.value; S.variant=Object.keys(CONCEPTS[S.concept].variants)[0]; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
 $('#copy').addEventListener('change',e=>{ S.copy=e.target.value; renderAll(); });
+$('#hdr').addEventListener('change',e=>{ S.hdr=e.target.value; renderPane(); });
 $('#variant').addEventListener('change',e=>{ S.variant=e.target.value; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
 $('#theme').addEventListener('change',e=>{ const v=e.target.value; if(v==='system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); });
 renderAll();
