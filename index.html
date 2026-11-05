@@ -155,6 +155,12 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .abar.inline{flex:1;justify-content:flex-start}
 .abar.inline .htx{flex:0 1 auto}
 .abar.inline .getchip{margin-right:auto}
+.abar.center{justify-content:center}
+.hpill{display:inline-flex;align-items:center;gap:6px;background:var(--bubble);border-radius:999px;padding:6px 14px;font-size:13.5px;color:var(--ink);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hpill .ico{color:var(--muted);font-size:12px}
+.hpill u{font-weight:600;text-underline-offset:2px}
+.hpill .lnk{color:var(--wix);font-weight:600;background:none;padding:0 2px}
+.hpill .lnk:hover{text-decoration:underline}
 .abar:hover .htx{text-decoration:underline;text-underline-offset:3px}
 .abar.static:hover .htx{text-decoration:none}
 .getchip{background:var(--wix);color:var(--on-wix);border-radius:999px;padding:4px 11px;font-weight:600;font-size:12.5px;white-space:nowrap}
@@ -223,7 +229,7 @@ body.present .foot{display:none}
   <label>Concept <select id="concept"></select></label>
   <label>Variant <select id="variant"></select></label>
   <label>Copy <select id="copy"></select></label>
-  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="right">Button on the right (as is)</option><option value="inline">Button next to the text</option><option value="rightLong">Button on the right · “Claim Domain”</option></select></label>
+  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="right">Button on the right (as is)</option><option value="inline">Button next to the text</option><option value="rightLong">Button on the right · “Claim Domain”</option><option value="pill">Centered pill (Harmony style)</option></select></label>
   <label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <button class="b" data-act="how">How it works</button>
   <button class="b" data-act="spec">Spec</button>
@@ -442,9 +448,10 @@ function renderPane(){
   if(isAddr){
     const line=S.stage==='connected'?`<span class="htx">${esc(S.chosen)}</span><span class="pill ok">Connected</span>`
       :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
+      :S.hdr==='pill'?`<div class="hpill"><span class="ico">🔗</span><span><u>${BEST}</u> is available!</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
       :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'?' Domain':''}</button>`;
     const opens=barOpens&&S.stage==='idle';
-    head=`<div class="whead"><div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead"><div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':S.hdr==='pill'&&S.stage==='idle'?'center':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
