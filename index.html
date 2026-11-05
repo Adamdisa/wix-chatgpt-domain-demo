@@ -276,9 +276,6 @@ const SUGG=[
   {d:'lilienblum.bar',s:'PREMIUM'},
 ];
 const CONCEPTS={
-  both:{label:'Recommended · card in the chat + address bar in the pane',variants:{
-    rec:{label:'Both together, as they would ship',note:'The inline card owns the moment the site goes live; the address bar keeps the free URL and the “Get” chip visible as long as the pane is open. One shared state: buy from either and both update.'}
-  }},
   chat:{label:'1 · In the chat, right after the site is created',variants:{
     card:{label:'Inline card in the live message',note:'Our inline widget (the same MCP App that draws the build progress) returns a domain card with the final result. It sits right under the “is live” line, above What’s included. Purchase opens Wix.'},
     text:{label:'Text only · the model writes it',note:'No widget. The model calls GetSuggestedDomains(siteId) + CheckDomainAvailability once and rewrites the current plain sentence as a short list with links. Cheapest to ship.'},
@@ -288,6 +285,9 @@ const CONCEPTS={
     address:{label:'Address bar in the pane header',note:'The widget header becomes a browser-style address bar showing the free Wix address, with a “Get lilienblum42.com” chip inside it. Click the bar for all names. The chat stays as it is today.'},
     banner:{label:'Banner under the header',note:'A slim banner between the widget header and the live site: the best available name, Get it, More names, dismiss. The chat stays as it is today.'},
     toast:{label:'Corner toast instead of “Built on Wix Headless”',note:'The bottom-right toast that today says “Built on Wix Headless” becomes the domain nudge. Smallest footprint; easiest to miss. The chat stays as it is today.'}
+  }},
+  both:{label:'3 · Both together (card + address bar)',variants:{
+    rec:{label:'Card in the chat + address bar in the pane',note:'The inline card owns the moment the site goes live; the address bar keeps the free URL and the “Get” chip visible as long as the pane is open. One shared state: buy from either and both update.'}
   }}
 };
 const SPEC=[
@@ -323,7 +323,7 @@ const HOW={
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
   ]
 };
-const S={concept:'both',variant:'rec',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
+const S={concept:'chat',variant:'card',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
 let saved=null;
 
 /* ---------- helpers ---------- */
