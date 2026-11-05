@@ -166,9 +166,12 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .toast.dom .t2{font-size:12.5px;color:var(--muted)}
 .toast.dom .bts{grid-column:1/-1;display:flex;gap:8px;align-items:center}
 .toast.dom .x{position:absolute;top:6px;right:8px}
-.drawer{position:absolute;inset:0 0 auto 0;background:var(--card);border-bottom:1px solid var(--line);box-shadow:0 20px 40px rgba(0,0,0,.35);padding:14px 16px 16px;display:grid;gap:12px;z-index:5;max-height:100%;overflow-y:auto}
-.drawer .dtitle{display:flex;align-items:center;gap:8px}
-.drawer .dtitle b{font-size:15px;flex:1}
+.drawer{position:absolute;inset:0 0 auto 0;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:0 20px 40px rgba(0,0,0,.35);padding:30px 14px 14px;z-index:5;max-height:100%;overflow-y:auto}
+.drawer>.close{position:absolute;top:4px;right:8px;padding:4px 8px;border-radius:8px;color:var(--muted)}
+.drawer>.close:hover{background:var(--hover)}
+.drawer .dcard{margin:0}
+.abar.static{cursor:default}
+.abar.static:hover{border-color:var(--line)}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:4}
 /* overlay: handoff + mock Wix tab */
 .ovl{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:70;display:grid;place-items:center;padding:16px}
@@ -293,7 +296,8 @@ const CONCEPTS={
     followup:{label:'Follow-up message with reply chips',note:'The closing message stays as it is today. ChatGPT then adds one short follow-up and native reply chips; each chip sends a visible user message.'}
   }},
   pane:{label:'2 · In the “Wix site” side pane',variants:{
-    address:{label:'Address bar in the pane header',note:'The widget header becomes a browser-style address bar showing the free Wix address, with a “Get lilienblum42.com” chip inside it. Click the bar for all names. The chat stays as it is today.'},
+    address:{label:'Address bar in the pane header',note:'The widget header becomes a browser-style address bar showing the free Wix address, with a “Claim lilienblum42.com” chip inside it. The chip goes straight to Wix checkout; the bar itself is not clickable. The chat stays as it is today.'},
+    addressWidget:{label:'Address bar + inline widget on click',note:'Same address bar. Clicking the bar (or the free URL) opens the domain widget over the site preview, the exact card used in the chat concept: same heading, names, badges, search and footer. The chat stays as it is today.'},
     banner:{label:'Banner under the header',note:'A slim banner between the widget header and the live site: the best available name, Get it, More names, dismiss. The chat stays as it is today.'},
     toast:{label:'Corner toast instead of “Built on Wix Headless”',note:'The bottom-right toast that today says “Built on Wix Headless” becomes the domain nudge. Smallest footprint; easiest to miss. The chat stays as it is today.'}
   }},
@@ -328,7 +332,7 @@ const HOW={
   ],
   pane:[
     '<b>The pane is our widget</b>, so this is widget UI, not model text. On pane open the widget calls an app-only tool (<code>_meta.ui.visibility: ["app"]</code>) that wraps GetSuggestedDomains(siteId) + CheckDomainAvailability and returns the best available name plus a short list.',
-    '<b>Address bar:</b> the free URL is already in the preview payload; showing it as an address bar makes the problem visible (it is 50+ characters) and gives the chip a natural home. Clicking opens the names drawer over the preview.',
+    '<b>Address bar:</b> the free URL is already in the preview payload; showing it as an address bar makes the problem visible (it is 50+ characters) and gives the chip a natural home. In the “+ inline widget” variant, clicking the bar opens the same domain card the chat concept uses, rendered by the pane widget over the preview; one component, two hosts.',
     '<b>Get:</b> <code>openExternal</code> to Wix checkout, same as in the chat. The pane’s refresh icon re-reads domain status after return; the address bar then shows the new domain.',
     '<b>Independence:</b> works even when the model’s closing message says nothing about domains (as in the Harmony flow today), and stays visible as long as the pane is open.',
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
@@ -356,13 +360,18 @@ function domainBody(opts={}){
   </div>`;
 }
 
+/* the domain card: same markup in the chat and inside the pane */
+function chatCard(id){
+  return `<div class="dcard"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b><span class="pill neutral free">${esc(C().pill)}</span></div>${domainBody({id})}</div>`;
+}
+
 /* ---------- thread ---------- */
 function baseMessage(){
   const c=S.concept, v=S.variant;
   const plain=`<p>You can connect a custom domain through Wix, whether you already own one or want to buy one.</p>`;
   let slotA='', slotB=plain;
   const isCard=(c==='chat'&&v==='card')||c==='both';
-  if(isCard){ slotA=`<div class="dcard"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b><span class="pill neutral free">${esc(C().pill)}</span></div>${domainBody({id:'cs'})}</div>`; slotB=''; }
+  if(isCard){ slotA=chatCard('cs'); slotB=''; }
   if(c==='chat'&&v==='text'){ slotB=S.stage==='pending' ? '' : S.stage==='connected'
       ? `<p><b>${esc(S.chosen)}</b> is now connected to ${SITE}. It can take up to 48 hours to work everywhere; the free address keeps working until then.</p>`
       : `<p>Your site’s address is <code>${FREE_URL}</code>, the free Wix address. A custom domain is easier to share. These are available now:</p>
@@ -422,10 +431,11 @@ function renderPane(){
   pane.hidden=!S.paneOpen; main.classList.toggle('split',S.paneOpen&&!S.full); main.classList.toggle('full',S.paneOpen&&S.full);
   const isPane=S.concept==='pane', v=S.variant;
   const curUrl=(S.stage==='connected'||S.stage==='pending')?S.chosen:FREE_URL;
-  const isAddr=(isPane&&v==='address')||S.concept==='both';
+  const isAddr=(isPane&&(v==='address'||v==='addressWidget'))||S.concept==='both';
+  const barOpens=isAddr&&!(isPane&&v==='address');
   let head;
   if(isAddr){
-    head=`<div class="whead"><div class="abar" data-act="drawer" role="button" tabindex="0" title="Site address"><span class="lock">🔒</span><span class="url ${(S.stage==='connected'||S.stage==='pending')?'clean':''}">${esc(curUrl)}</span>${S.stage==='connected'?'<span class="pill ok">Connected</span>':S.stage==='pending'?'<span class="pill neutral">Setting up…</span>':`<button class="getchip" data-act="get" data-d="${BEST}">${esc(C().chip)}</button>`}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead"><div class="abar ${barOpens?'':'static'}" ${barOpens?'data-act="drawer" role="button" tabindex="0" title="Site address"':'title="Site address"'}><span class="lock">🔒</span><span class="url ${(S.stage==='connected'||S.stage==='pending')?'clean':''}">${esc(curUrl)}</span>${S.stage==='connected'?'<span class="pill ok">Connected</span>':S.stage==='pending'?'<span class="pill neutral">Setting up…</span>':`<button class="getchip" data-act="get" data-d="${BEST}">${esc(C().chip)}</button>`}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
@@ -438,7 +448,7 @@ function renderPane(){
   }
   $('#wbanner').innerHTML=banner;
   let layer='';
-  if(S.drawer) layer+=`<div class="scrim" data-act="close-drawer"></div><div class="drawer"><div class="dtitle"><span class="wixicon">WIX</span><b>${esc(C().drawerTitle)}</b><button class="ib" data-act="close-drawer" title="Close">✕</button></div>${domainBody({all:true,id:'ds'})}</div>`;
+  if(S.drawer) layer+=`<div class="scrim" data-act="close-drawer"></div><div class="drawer"><button class="close" data-act="close-drawer" title="Close">✕</button>${chatCard('ds')}</div>`;
   if(isPane&&v==='toast'&&!S.toastGone){
     layer+=S.stage==='connected'
       ?`<div class="toast dom"><span class="t1">✓ ${esc(S.chosen)} connected</span><span></span><span class="t2" style="grid-column:1/-1">DNS can take up to 48 hours. The free address keeps working.</span><button class="x" data-act="dismiss-toast">✕</button></div>`
@@ -521,7 +531,7 @@ document.addEventListener('click',async e=>{
     case 'openpane': S.paneOpen=true; renderPane(); renderThread(); break;
     case 'drawer': S.drawer=true; renderPane(); break;
     case 'close-drawer': S.drawer=false; renderPane(); break;
-    case 'more': { const card=el.closest('.dcard')||el.closest('.drawer'); if(card){ const body=card.querySelector('.dbody'); body.outerHTML=domainBody({all:true,id:'cs'}); } break; }
+    case 'more': { const card=el.closest('.dcard'); if(card){ const body=card.querySelector('.dbody'); body.outerHTML=domainBody({all:true,id:card.closest('.drawer')?'ds':'cs'}); } break; }
     case 'get': startGet(el.dataset.d); break;
     case 'connect-own': S.overlay={kind:'leave',connect:true}; renderOverlay(); break;
     case 'wix-open': S.overlay={kind:'wix',d:S.overlay.d,connect:S.overlay.connect}; renderOverlay(); break;
