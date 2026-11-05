@@ -119,7 +119,9 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .dlist{display:grid;gap:2px}
 .drow{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:10px;min-width:0}
 .drow:hover{background:var(--hover)}
-.drow b{font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.dname{flex:1;min-width:0;display:grid;line-height:1.3}
+.dname b{font-weight:600;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{font-size:11.5px;color:var(--muted)}
 .wbtn{padding:6px 14px;border-radius:999px;font-weight:600;font-size:13px;border:1px solid var(--line);white-space:nowrap;background:var(--card);color:var(--ink)}
 .wbtn.pri{background:var(--wix);color:var(--on-wix);border-color:var(--wix)}
 .wbtn.pri:hover{background:var(--wix-hover);border-color:var(--wix-hover)}
@@ -212,6 +214,7 @@ body.present .foot{display:none}
   <span class="mock" title="Concept mockup for internal discussion. Not a real product.">Concept mockup</span>
   <label>Concept <select id="concept"></select></label>
   <label>Variant <select id="variant"></select></label>
+  <label>Copy <select id="copy"></select></label>
   <label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <button class="b" data-act="how">How it works</button>
   <button class="b" data-act="spec">Spec</button>
@@ -275,6 +278,14 @@ const SUGG=[
   {d:'lilienblum.com',s:'REGISTERED'},
   {d:'lilienblum.bar',s:'PREMIUM'},
 ];
+/* Copy versions. "perfect" mirrors the wording of Wix's own Add Domain page (dashboard → Connect Domain) and its "Upgrade now to claim it" banner. */
+const COPY={
+  perfect:{label:'“Get the perfect domain for…” + Claim (Wix dashboard wording)',heading:`Get the perfect domain for ${SITE}`,pill:'Free Wix URL',lead:'Choose one of these domains tailored to your site:',btn:'Claim',chip:`Claim ${BEST}`,placeholder:'Type the domain you want',own:'Have a domain you want to connect?',pay:'Claim it on Wix',drawerTitle:`Get the perfect domain for ${SITE}`,
+    badges:{'lilienblum42.com':'Most popular','lilienblum42.bar':'Short and memorable','lilienblumbeer.com':'Ideal for small businesses','lilienblum42.co.il':'High local reach'}},
+  neutral:{label:'Neutral · “Your site’s address” + Get',heading:'Your site’s address',pill:'Free Wix address',lead:'A custom domain is easier to say, share and find. Available now:',btn:'Get',chip:`Get ${BEST}`,placeholder:'Try another name, e.g. lilienblumbar.com',own:'I already own a domain',pay:'Purchase completes on Wix',drawerTitle:'Site address',badges:null},
+  banner:{label:'Banner · “lilienblum42.com is available” + Claim',heading:`${BEST} is available`,pill:'Free Wix URL',lead:`Claim it for ${SITE}, or pick another name:`,btn:'Claim',chip:'Claim it',placeholder:'Search another name',own:'Connect a domain you already own',pay:'Set up on Wix',drawerTitle:`${BEST} is available`,badges:null},
+};
+const C=()=>COPY[S.copy];
 const CONCEPTS={
   chat:{label:'1 · In the chat, right after the site is created',variants:{
     card:{label:'Inline card in the live message',note:'Our inline widget (the same MCP App that draws the build progress) returns a domain card with the final result. It sits right under the “is live” line, above What’s included. Purchase opens Wix.'},
@@ -323,13 +334,13 @@ const HOW={
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
   ]
 };
-const S={concept:'chat',variant:'card',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
+const S={concept:'chat',variant:'card',copy:'perfect',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
 let saved=null;
 
 /* ---------- helpers ---------- */
 function pill(s){ return s==='AVAILABLE'?'<span class="pill ok">Available</span>':s==='PREMIUM'?'<span class="pill prem">Premium</span>':s==='REGISTERED'?'<span class="pill bad">Taken</span>':'<span class="pill neutral">Checking…</span>'; }
 function statusFor(name){ const k=SUGG.find(x=>x.d===name); if(k) return k.s; if(!/\./.test(name)) return 'REGISTERED'; return /42|billiard|beer|bar/i.test(name)?'AVAILABLE':'REGISTERED'; }
-function domainRows(list){ return `<div class="dlist">${list.map(x=>`<div class="drow"><b>${esc(x.d)}</b>${pill(x.s)}${x.s==='REGISTERED'?'<button class="wbtn" disabled>Taken</button>':`<button class="wbtn pri" data-act="get" data-d="${esc(x.d)}">Get</button>`}</div>`).join('')}</div>`; }
+function domainRows(list){ const b=C().badges; return `<div class="dlist">${list.map(x=>`<div class="drow"><div class="dname"><b>${esc(x.d)}</b>${b&&b[x.d]?`<span class="badge">${esc(b[x.d])}</span>`:''}</div>${pill(x.s)}${x.s==='REGISTERED'?'<button class="wbtn" disabled>Taken</button>':`<button class="wbtn pri" data-act="get" data-d="${esc(x.d)}">${esc(C().btn)}</button>`}</div>`).join('')}</div>`; }
 function connectedBlock(){ return `<div class="dstate"><span class="pill ok">✓ Connected</span><div style="display:grid;min-width:0"><b>${esc(S.chosen)}</b><span>Points to ${SITE}. DNS can take up to 48 hours; the free address keeps working until then.</span></div></div>`; }
 function pendingBlock(){ return `<div class="dstate" style="background:var(--soft)"><span class="pill neutral">Setting up…</span><div style="display:grid;min-width:0;flex:1"><b>${esc(S.chosen)}</b><span>${S.connectOwn?'Connecting your domain to':'Registered on Wix. Connecting to'} ${SITE}; usually minutes, up to 48 hours everywhere.</span></div><button class="wbtn" data-act="check-status">Check status</button></div>`; }
 function domainBody(opts={}){
@@ -338,11 +349,11 @@ function domainBody(opts={}){
   const list=opts.all?SUGG:SUGG.slice(0,3);
   return `<div class="dbody">
     ${opts.noUrl?'':`<div class="urlrow"><span style="color:var(--faint)">🌐</span><code title="${FREE_URL}">${FREE_URL}</code><button class="ghost" data-act="copy">Copy</button></div>`}
-    <div class="dsub">${opts.lead||'A custom domain is easier to say, share and find. Available now:'}</div>
+    <div class="dsub">${opts.lead||esc(C().lead)}</div>
     ${domainRows(list)}
-    <form class="dsearch" data-form="check"><input id="${opts.id||'dsearch'}" placeholder="Try another name, e.g. lilienblumbar.com" autocomplete="off"><button class="wbtn" type="submit">Check</button></form>
+    <form class="dsearch" data-form="check"><input id="${opts.id||'dsearch'}" placeholder="${esc(C().placeholder)}" autocomplete="off"><button class="wbtn" type="submit">Check</button></form>
     <div id="${(opts.id||'dsearch')}-res"></div>
-    <div class="dfoot">${opts.all?'':'<button data-act="more">Show more names</button>'}<button data-act="connect-own">I already own a domain</button><span class="pay">Purchase completes on Wix</span></div>
+    <div class="dfoot">${opts.all?'':'<button data-act="more">Show more names</button>'}<button data-act="connect-own">${esc(C().own)}</button><span class="pay">${esc(C().pay)}</span></div>
   </div>`;
 }
 
@@ -352,11 +363,11 @@ function baseMessage(){
   const plain=`<p>You can connect a custom domain through Wix, whether you already own one or want to buy one.</p>`;
   let slotA='', slotB=plain;
   const isCard=(c==='chat'&&v==='card')||c==='both';
-  if(isCard){ slotA=`<div class="dcard"><div class="dhead"><span class="wixicon">WIX</span><b>Your site’s address</b><span class="pill neutral free">Free Wix address</span></div>${domainBody({id:'cs'})}</div>`; slotB=''; }
+  if(isCard){ slotA=`<div class="dcard"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b><span class="pill neutral free">${esc(C().pill)}</span></div>${domainBody({id:'cs'})}</div>`; slotB=''; }
   if(c==='chat'&&v==='text'){ slotB=S.stage==='pending' ? '' : S.stage==='connected'
       ? `<p><b>${esc(S.chosen)}</b> is now connected to ${SITE}. It can take up to 48 hours to work everywhere; the free address keeps working until then.</p>`
       : `<p>Your site’s address is <code>${FREE_URL}</code>, the free Wix address. A custom domain is easier to share. These are available now:</p>
-         <ul>${SUGG.slice(0,3).map(x=>`<li><b>${esc(x.d)}</b> · Available · <a href="#" data-act="get" data-d="${esc(x.d)}">Get it ↗</a></li>`).join('')}</ul>
+         <ul>${SUGG.slice(0,3).map(x=>`<li><b>${esc(x.d)}</b> · Available · <a href="#" data-act="get" data-d="${esc(x.d)}">${esc(C().btn)} it ↗</a></li>`).join('')}</ul>
          <p>Already own a domain? <a href="#" data-act="connect-own">Connect it in Wix ↗</a>. Or tell me a name and I’ll check whether it’s available.</p>`; }
   return `
   <div class="msg user"><div class="bub"><span class="mention"><span class="wixicon">WIX</span>Wix</span> create a site for my bar in Tel Aviv in Lilenbloum street. I have 42 draft beers, a wine selection, some good food and 2 billiards tables - and we show sport games throughout the day. I want the look and feel of the site to match</div></div>
@@ -381,7 +392,7 @@ function followupMessage(){
   if(S.concept!=='chat'||S.variant!=='followup') return '';
   if(S.stage==='connected'||S.extra.some(m=>m.kind==='fu-answered')) return `<div class="msg bot"><p>One more thing: your site uses the free Wix address (<code>${FREE_URL}</code>). <b>${BEST}</b> is available if you want something easier to share.</p></div>`;
   return `<div class="msg bot"><p>One more thing: your site uses the free Wix address (<code>${FREE_URL}</code>). <b>${BEST}</b> is available if you want something easier to share.</p></div>
-  <div class="chips"><button data-act="chip" data-t="Get ${BEST}">Get ${BEST}</button><button data-act="chip" data-t="Show me more names">Show me more names</button><button data-act="chip" data-t="I already own a domain">I already own a domain</button><button data-act="chip" data-t="Not now">Not now</button></div>`;
+  <div class="chips"><button data-act="chip" data-t="${esc(C().btn)} ${BEST}">${esc(C().btn)} ${BEST}</button><button data-act="chip" data-t="Show me more names">Show me more names</button><button data-act="chip" data-t="I already own a domain">I already own a domain</button><button data-act="chip" data-t="Not now">Not now</button></div>`;
 }
 function extraHTML(){
   return S.extra.map(m=>{
@@ -415,7 +426,7 @@ function renderPane(){
   const isAddr=(isPane&&v==='address')||S.concept==='both';
   let head;
   if(isAddr){
-    head=`<div class="whead"><div class="abar" data-act="drawer" role="button" tabindex="0" title="Site address"><span class="lock">🔒</span><span class="url ${(S.stage==='connected'||S.stage==='pending')?'clean':''}">${esc(curUrl)}</span>${S.stage==='connected'?'<span class="pill ok">Connected</span>':S.stage==='pending'?'<span class="pill neutral">Setting up…</span>':`<button class="getchip" data-act="get" data-d="${BEST}">Get ${BEST}</button>`}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead"><div class="abar" data-act="drawer" role="button" tabindex="0" title="Site address"><span class="lock">🔒</span><span class="url ${(S.stage==='connected'||S.stage==='pending')?'clean':''}">${esc(curUrl)}</span>${S.stage==='connected'?'<span class="pill ok">Connected</span>':S.stage==='pending'?'<span class="pill neutral">Setting up…</span>':`<button class="getchip" data-act="get" data-d="${BEST}">${esc(C().chip)}</button>`}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
@@ -424,15 +435,15 @@ function renderPane(){
   if(isPane&&v==='banner'&&!S.bannerGone){
     banner=S.stage==='connected'
       ?`<div class="banner"><span class="pill ok">✓ Connected</span><span class="tx"><b>${esc(S.chosen)}</b> now points to this site. DNS can take up to 48 hours.</span><button class="ib" data-act="dismiss-banner" title="Dismiss">✕</button></div>`
-      :`<div class="banner"><span>🌐</span><span class="tx"><b>${BEST}</b> is available. This site uses a free Wix address.</span><button class="wbtn pri" data-act="get" data-d="${BEST}">Get it</button><button class="wbtn" data-act="drawer">More names</button><button class="ib" data-act="dismiss-banner" title="Dismiss">✕</button></div>`;
+      :`<div class="banner"><span>🌐</span><span class="tx"><b>${BEST}</b> is available. This site uses a free Wix address.</span><button class="wbtn pri" data-act="get" data-d="${BEST}">${esc(C().btn)} it</button><button class="wbtn" data-act="drawer">More names</button><button class="ib" data-act="dismiss-banner" title="Dismiss">✕</button></div>`;
   }
   $('#wbanner').innerHTML=banner;
   let layer='';
-  if(S.drawer) layer+=`<div class="scrim" data-act="close-drawer"></div><div class="drawer"><div class="dtitle"><span class="wixicon">WIX</span><b>Site address</b><button class="ib" data-act="close-drawer" title="Close">✕</button></div>${domainBody({all:true,id:'ds'})}</div>`;
+  if(S.drawer) layer+=`<div class="scrim" data-act="close-drawer"></div><div class="drawer"><div class="dtitle"><span class="wixicon">WIX</span><b>${esc(C().drawerTitle)}</b><button class="ib" data-act="close-drawer" title="Close">✕</button></div>${domainBody({all:true,id:'ds'})}</div>`;
   if(isPane&&v==='toast'&&!S.toastGone){
     layer+=S.stage==='connected'
       ?`<div class="toast dom"><span class="t1">✓ ${esc(S.chosen)} connected</span><span></span><span class="t2" style="grid-column:1/-1">DNS can take up to 48 hours. The free address keeps working.</span><button class="x" data-act="dismiss-toast">✕</button></div>`
-      :`<div class="toast dom"><span class="t1">${BEST} is available</span><span></span><span class="t2" style="grid-column:1/-1">Replace the free Wix address with your own.</span><div class="bts"><button class="wbtn pri" data-act="get" data-d="${BEST}">Get it</button><button class="wbtn" data-act="drawer">More names</button></div><button class="x" data-act="dismiss-toast">✕</button></div>`;
+      :`<div class="toast dom"><span class="t1">${BEST} is available</span><span></span><span class="t2" style="grid-column:1/-1">Replace the free Wix address with your own.</span><div class="bts"><button class="wbtn pri" data-act="get" data-d="${BEST}">${esc(C().btn)} it</button><button class="wbtn" data-act="drawer">More names</button></div><button class="x" data-act="dismiss-toast">✕</button></div>`;
   } else if(!(isPane&&v==='toast')&&!S.toastGone){
     layer+=`<div class="toast">Built on <b>WIX</b> Headless<button class="x" data-act="dismiss-toast">✕</button></div>`;
   }
@@ -468,6 +479,7 @@ function renderOverlay(){
 function renderBar(){
   const cs=$('#concept'); cs.innerHTML=Object.entries(CONCEPTS).map(([k,c])=>`<option value="${k}" ${k===S.concept?'selected':''}>${esc(c.label)}</option>`).join('');
   const vs=$('#variant'); vs.innerHTML=Object.entries(CONCEPTS[S.concept].variants).map(([k,v])=>`<option value="${k}" ${k===S.variant?'selected':''}>${esc(v.label)}</option>`).join('');
+  const cp=$('#copy'); cp.innerHTML=Object.entries(COPY).map(([k,c])=>`<option value="${k}" ${k===S.copy?'selected':''}>${esc(c.label)}</option>`).join('');
   $('#cnote').textContent=CONCEPTS[S.concept].variants[S.variant].note;
   $('#panename').textContent='Wix site';
 }
@@ -476,10 +488,10 @@ function renderAll(){ renderBar(); renderThread(); renderPane(); renderOverlay()
 /* ---------- flows ---------- */
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function botReply(html){ S.extra.push({kind:'typing'}); renderThread(); await sleep(650); S.extra.pop(); S.extra.push({kind:'bot',html}); renderThread(); }
-function listReplyHTML(){ return `<p>Here’s what’s available for ${SITE} right now:</p><ul>${SUGG.map(x=>`<li><b>${esc(x.d)}</b> · ${x.s==='AVAILABLE'?'Available':x.s==='PREMIUM'?'Available as a premium domain':'Already taken'}${x.s==='REGISTERED'?'':` · <a href="#" data-act="get" data-d="${esc(x.d)}">Get it ↗</a>`}</li>`).join('')}</ul><p>Tell me another name and I’ll check it, or <a href="#" data-act="connect-own">connect a domain you already own ↗</a>.</p>`; }
+function listReplyHTML(){ return `<p>Here’s what’s available for ${SITE} right now:</p><ul>${SUGG.map(x=>`<li><b>${esc(x.d)}</b> · ${x.s==='AVAILABLE'?'Available':x.s==='PREMIUM'?'Available as a premium domain':'Already taken'}${x.s==='REGISTERED'?'':` · <a href="#" data-act="get" data-d="${esc(x.d)}">${esc(C().btn)} it ↗</a>`}</li>`).join('')}</ul><p>Tell me another name and I’ll check it, or <a href="#" data-act="connect-own">connect a domain you already own ↗</a>.</p>`; }
 async function handleChip(t){
   S.extra.push({kind:'user',text:t}); S.extra.push({kind:'fu-answered'}); renderThread();
-  if(/^Get /.test(t)){ await botReply(`<p>Opening Wix to register <b>${BEST}</b> for ${SITE}. The purchase completes there; I’ll pick up once it’s connected.</p>`); startGet(BEST); }
+  if(/^(Get|Claim) /.test(t)){ await botReply(`<p>Opening Wix to register <b>${BEST}</b> for ${SITE}. The purchase completes there; I’ll pick up once it’s connected.</p>`); startGet(BEST); }
   else if(/more names/i.test(t)) await botReply(listReplyHTML());
   else if(/own a domain/i.test(t)){ await botReply(`<p>Great. Wix will walk you through connecting it to ${SITE}.</p>`); S.overlay={kind:'leave',connect:true}; renderOverlay(); }
   else await botReply(`<p>Sure. You can add a domain any time from your Wix dashboard, or just ask me here.</p>`);
@@ -487,7 +499,7 @@ async function handleChip(t){
 async function handleSend(text){
   S.extra.push({kind:'user',text}); renderThread();
   const m=text.match(/([a-z0-9-]+\.[a-z.]{2,})/i);
-  if(m){ const d=m[1].toLowerCase(), s=statusFor(d); await botReply(`<p><b>${esc(d)}</b> is ${s==='AVAILABLE'?'available':s==='PREMIUM'?'available as a premium domain':'already taken'}.${s==='REGISTERED'?' Want me to suggest similar names?':` <a href="#" data-act="get" data-d="${esc(d)}">Get it ↗</a>`}</p>`); }
+  if(m){ const d=m[1].toLowerCase(), s=statusFor(d); await botReply(`<p><b>${esc(d)}</b> is ${s==='AVAILABLE'?'available':s==='PREMIUM'?'available as a premium domain':'already taken'}.${s==='REGISTERED'?' Want me to suggest similar names?':` <a href="#" data-act="get" data-d="${esc(d)}">${esc(C().btn)} it ↗</a>`}</p>`); }
   else if(/domain|name|address|url/i.test(text)) await botReply(listReplyHTML());
   else await botReply(`<p>Replies in this mockup are scripted. Try the domain buttons, or type a domain name to check it.</p>`);
 }
@@ -534,6 +546,7 @@ document.addEventListener('submit',e=>{
   if(e.target.dataset.form==='check'){ e.preventDefault(); const inp=e.target.querySelector('input'); let d=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,''); if(!d) return; if(!/\./.test(d)) d+='.com'; const s=statusFor(d); const res=document.getElementById(inp.id+'-res'); if(res) res.innerHTML=domainRows([{d,s}]); }
 });
 $('#concept').addEventListener('change',e=>{ S.concept=e.target.value; S.variant=Object.keys(CONCEPTS[S.concept].variants)[0]; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
+$('#copy').addEventListener('change',e=>{ S.copy=e.target.value; renderAll(); });
 $('#variant').addEventListener('change',e=>{ S.variant=e.target.value; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
 $('#theme').addEventListener('change',e=>{ const v=e.target.value; if(v==='system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); });
 renderAll();
