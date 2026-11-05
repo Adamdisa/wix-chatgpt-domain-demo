@@ -148,7 +148,9 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .whead .ib{padding:6px;border-radius:8px;color:var(--muted)}
 .whead .ib:hover{background:var(--hover)}
 .abar{flex:1;display:flex;align-items:center;gap:10px;min-width:0;padding:2px 0;cursor:pointer;border-radius:10px}
-.abar .htx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:14px;color:var(--ink)}
+.abar .htx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;font-size:14px;color:var(--ink)}
+.abar .htx b{font-weight:600}
+.abar .htx .sep{color:var(--muted)}
 .abar .htx.sub{font-weight:500;color:var(--muted)}
 .abar:hover .htx{text-decoration:underline;text-underline-offset:3px}
 .abar.static:hover .htx{text-decoration:none}
@@ -283,10 +285,10 @@ const SUGG=[
 ];
 /* Copy versions. "perfect" mirrors the wording of Wix's own Add Domain page (dashboard → Connect Domain) and its "Upgrade now to claim it" banner. */
 const COPY={
-  perfect:{label:'“Get the perfect domain for…” + Claim (Wix dashboard wording)',heading:`Get the perfect domain for ${SITE}`,pill:'Free Wix URL',lead:'Choose one of these domains tailored to your site:',btn:'Claim',hdr:{text:'Get the perfect domain',cta:`Claim ${BEST}`},placeholder:'Type the domain you want',own:'Have a domain you want to connect?',pay:'Claim it on Wix',drawerTitle:`Get the perfect domain for ${SITE}`,
+  perfect:{label:'“Get the perfect domain for…” + Claim (Wix dashboard wording)',heading:`Get the perfect domain for ${SITE}`,pill:'Free Wix URL',lead:'Choose one of these domains tailored to your site:',btn:'Claim',hdr:{lead:'Get the perfect domain',fact:`${BEST} is available`,cta:'Claim'},placeholder:'Type the domain you want',own:'Have a domain you want to connect?',pay:'Claim it on Wix',drawerTitle:`Get the perfect domain for ${SITE}`,
     badges:{'lilienblum42.com':'Most popular','lilienblum42.bar':'Short and memorable','lilienblumbeer.com':'Ideal for small businesses','lilienblum42.co.il':'High local reach'}},
-  neutral:{label:'Neutral · “Your site’s address” + Get',heading:'Your site’s address',pill:'Free Wix address',lead:'A custom domain is easier to say, share and find. Available now:',btn:'Get',hdr:{text:'Your site is on a free Wix URL',cta:`Get ${BEST}`},placeholder:'Try another name, e.g. lilienblumbar.com',own:'I already own a domain',pay:'Purchase completes on Wix',drawerTitle:'Site address',badges:null},
-  banner:{label:'Banner · “lilienblum42.com is available” + Claim',heading:`${BEST} is available`,pill:'Free Wix URL',lead:`Claim it for ${SITE}, or pick another name:`,btn:'Claim',hdr:{text:`${BEST} is available`,cta:'Claim'},placeholder:'Search another name',own:'Connect a domain you already own',pay:'Set up on Wix',drawerTitle:`${BEST} is available`,badges:null},
+  neutral:{label:'Neutral · “Your site’s address” + Get',heading:'Your site’s address',pill:'Free Wix address',lead:'A custom domain is easier to say, share and find. Available now:',btn:'Get',hdr:{lead:'Your site is on a free Wix URL',fact:`${BEST} is available`,cta:'Get'},placeholder:'Try another name, e.g. lilienblumbar.com',own:'I already own a domain',pay:'Purchase completes on Wix',drawerTitle:'Site address',badges:null},
+  banner:{label:'Banner · “lilienblum42.com is available” + Claim',heading:`${BEST} is available`,pill:'Free Wix URL',lead:`Claim it for ${SITE}, or pick another name:`,btn:'Claim',hdr:{lead:`${BEST} is available`,fact:`made for ${SITE}`,cta:'Claim'},placeholder:'Search another name',own:'Connect a domain you already own',pay:'Set up on Wix',drawerTitle:`${BEST} is available`,badges:null},
 };
 const C=()=>COPY[S.copy];
 const CONCEPTS={
@@ -436,7 +438,7 @@ function renderPane(){
   if(isAddr){
     const line=S.stage==='connected'?`<span class="htx">${esc(S.chosen)}</span><span class="pill ok">Connected</span>`
       :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
-      :`<span class="htx">${esc(C().hdr.text)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button>`;
+      :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button>`;
     const opens=barOpens&&S.stage==='idle';
     head=`<div class="whead"><div class="abar ${opens?'':'static'}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
