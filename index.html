@@ -147,11 +147,11 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .whead .dash:hover{background:var(--wix-hover)}
 .whead .ib{padding:6px;border-radius:8px;color:var(--muted)}
 .whead .ib:hover{background:var(--hover)}
-.abar{flex:1;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;background:var(--soft);min-width:0;cursor:pointer}
-.abar:hover{border-color:var(--faint)}
-.abar .url{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:13px var(--mono);color:var(--muted)}
-.abar .url.clean{color:var(--ink)}
-.abar .lock{color:var(--faint);font-size:12px}
+.abar{flex:1;display:flex;align-items:center;gap:10px;min-width:0;padding:2px 0;cursor:pointer;border-radius:10px}
+.abar .htx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:14px;color:var(--ink)}
+.abar .htx.sub{font-weight:500;color:var(--muted)}
+.abar:hover .htx{text-decoration:underline;text-underline-offset:3px}
+.abar.static:hover .htx{text-decoration:none}
 .getchip{background:var(--wix);color:var(--on-wix);border-radius:999px;padding:4px 11px;font-weight:600;font-size:12.5px;white-space:nowrap}
 .getchip:hover{background:var(--wix-hover)}
 .banner{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--wix-soft);font-size:13.5px;flex-wrap:wrap}
@@ -283,10 +283,10 @@ const SUGG=[
 ];
 /* Copy versions. "perfect" mirrors the wording of Wix's own Add Domain page (dashboard → Connect Domain) and its "Upgrade now to claim it" banner. */
 const COPY={
-  perfect:{label:'“Get the perfect domain for…” + Claim (Wix dashboard wording)',heading:`Get the perfect domain for ${SITE}`,pill:'Free Wix URL',lead:'Choose one of these domains tailored to your site:',btn:'Claim',chip:`Claim ${BEST}`,placeholder:'Type the domain you want',own:'Have a domain you want to connect?',pay:'Claim it on Wix',drawerTitle:`Get the perfect domain for ${SITE}`,
+  perfect:{label:'“Get the perfect domain for…” + Claim (Wix dashboard wording)',heading:`Get the perfect domain for ${SITE}`,pill:'Free Wix URL',lead:'Choose one of these domains tailored to your site:',btn:'Claim',hdr:{text:'Get the perfect domain',cta:`Claim ${BEST}`},placeholder:'Type the domain you want',own:'Have a domain you want to connect?',pay:'Claim it on Wix',drawerTitle:`Get the perfect domain for ${SITE}`,
     badges:{'lilienblum42.com':'Most popular','lilienblum42.bar':'Short and memorable','lilienblumbeer.com':'Ideal for small businesses','lilienblum42.co.il':'High local reach'}},
-  neutral:{label:'Neutral · “Your site’s address” + Get',heading:'Your site’s address',pill:'Free Wix address',lead:'A custom domain is easier to say, share and find. Available now:',btn:'Get',chip:`Get ${BEST}`,placeholder:'Try another name, e.g. lilienblumbar.com',own:'I already own a domain',pay:'Purchase completes on Wix',drawerTitle:'Site address',badges:null},
-  banner:{label:'Banner · “lilienblum42.com is available” + Claim',heading:`${BEST} is available`,pill:'Free Wix URL',lead:`Claim it for ${SITE}, or pick another name:`,btn:'Claim',chip:'Claim it',placeholder:'Search another name',own:'Connect a domain you already own',pay:'Set up on Wix',drawerTitle:`${BEST} is available`,badges:null},
+  neutral:{label:'Neutral · “Your site’s address” + Get',heading:'Your site’s address',pill:'Free Wix address',lead:'A custom domain is easier to say, share and find. Available now:',btn:'Get',hdr:{text:'Your site is on a free Wix URL',cta:`Get ${BEST}`},placeholder:'Try another name, e.g. lilienblumbar.com',own:'I already own a domain',pay:'Purchase completes on Wix',drawerTitle:'Site address',badges:null},
+  banner:{label:'Banner · “lilienblum42.com is available” + Claim',heading:`${BEST} is available`,pill:'Free Wix URL',lead:`Claim it for ${SITE}, or pick another name:`,btn:'Claim',hdr:{text:`${BEST} is available`,cta:'Claim'},placeholder:'Search another name',own:'Connect a domain you already own',pay:'Set up on Wix',drawerTitle:`${BEST} is available`,badges:null},
 };
 const C=()=>COPY[S.copy];
 const CONCEPTS={
@@ -296,20 +296,20 @@ const CONCEPTS={
     followup:{label:'Follow-up message with reply chips',note:'The closing message stays as it is today. ChatGPT then adds one short follow-up and native reply chips; each chip sends a visible user message.'}
   }},
   pane:{label:'2 · In the “Wix site” side pane',variants:{
-    address:{label:'Address bar in the pane header',note:'The widget header becomes a browser-style address bar showing the free Wix address, with a “Claim lilienblum42.com” chip inside it. The chip goes straight to Wix checkout; the bar itself is not clickable. The chat stays as it is today.'},
-    addressWidget:{label:'Address bar + inline widget on click',note:'Same address bar. Clicking the bar (or the free URL) opens the domain widget over the site preview, the exact card used in the chat concept: same heading, names, badges, search and footer. The chat stays as it is today.'},
+    address:{label:'Domain line in the pane header',note:'The widget header carries one short selling line and a CTA (wording follows the Copy selector). No free URL: the header already has the open-in-new-tab arrow. The CTA goes straight to Wix checkout for the best name. The chat stays as it is today.'},
+    addressWidget:{label:'Header line + inline widget on click',note:'Same header line. Clicking the line opens the domain widget over the site preview, the exact card used in the chat concept: same heading, names, badges, search and footer. The CTA still goes straight to checkout. The chat stays as it is today.'},
     banner:{label:'Banner under the header',note:'A slim banner between the widget header and the live site: the best available name, Get it, More names, dismiss. The chat stays as it is today.'},
     toast:{label:'Corner toast instead of “Built on Wix Headless”',note:'The bottom-right toast that today says “Built on Wix Headless” becomes the domain nudge. Smallest footprint; easiest to miss. The chat stays as it is today.'}
   }},
-  both:{label:'3 · Both together (card + address bar)',variants:{
-    rec:{label:'Card in the chat + address bar in the pane',note:'The inline card owns the moment the site goes live; the address bar keeps the free URL and the “Get” chip visible as long as the pane is open. One shared state: buy from either and both update.'}
+  both:{label:'3 · Both together (card + header line)',variants:{
+    rec:{label:'Card in the chat + header line in the pane',note:'The inline card owns the moment the site goes live; the header line keeps the nudge and the CTA visible as long as the pane is open. One shared state: buy from either and both update.'}
   }}
 };
 const SPEC=[
   ['Problem','After a site is created the only domain mention is one sentence with no action, and the free headless address is 50+ characters (headless-…-1407.wix-site-host.com). In the Harmony flow there is no mention at all.'],
-  ['Proposal','Two surfaces, one shared state. (1) An inline domain card in the final message of the site-creation tool, under the “is live” line. (2) A browser-style address bar in the Wix site pane header showing the current address, with a “Get &lt;best name&gt;” chip while the site is on the free address.'],
+  ['Proposal','Two surfaces, one shared state. (1) An inline domain card in the final message of the site-creation tool, under the “is live” line. (2) One short domain line with a CTA in the Wix site pane header while the site is on the free address (no URL shown; the header already has the open-in-new-tab arrow).'],
   ['Data','On build completion the server calls GetSuggestedDomains(siteId, limit 6) and CheckDomainAvailability for those names, picks the top 3 available, and returns them with the free URL in the tool result’s structured content. The pane widget reads the same payload (one fetch per site, cached); its refresh icon re-reads domain status. “Try another name” uses an app-only tool wrapping CheckDomainAvailability.'],
-  ['States','Available (default) · No name available (card shows the free address + search only; chip hidden) · Checking · Pending (registered or connect started; “Setting up…”, Check status) · Connected (card collapses to one row; address bar shows the domain) · Dismissed (pane only, remembered per site in widget state) · Already has a custom domain (card hidden; address bar shows it).'],
+  ['States','Available (default) · No name available (card shows the free address + search only; chip hidden) · Checking · Pending (registered or connect started; “Setting up…”, Check status) · Connected (card collapses to one row; header line shows the domain as connected) · Dismissed (pane only, remembered per site in widget state) · Already has a custom domain (card hidden; header line hidden).'],
   ['Actions','Get → openExternal to Wix domain checkout with domain + metaSiteId preselected (Wix hosts in redirect_domains; ChatGPT may show its leave confirmation). I already own a domain → Wix connect-domain page for the site. Copy the free address. Check status → reads the site’s connected domains. Manage → dashboard domains page.'],
   ['Copy rules','Never a price, never “Premium” or plan names (CheckDomainAvailability rule and review risk). Factual framing: the free address is long; a custom domain is easier to say, share and find. “Purchase completes on Wix” stays visible near every Get.'],
   ['Measurement','Card/bar impression · Get click (surface, name, rank) · landed on Wix checkout · purchase completed (join on metaSiteId) · connect-own click · check-name use · dismiss. Baseline from MCP logs: ~8% of users ask about domains after creation.'],
@@ -317,8 +317,8 @@ const SPEC=[
 ];
 const HOW={
   both:[
-    '<b>One payload, two renderers.</b> The site-creation tool’s final result carries the free URL and the top 3 available names. The inline card renders it in the message; the pane widget renders the address bar from the same data.',
-    '<b>Card</b> owns the moment the site goes live: see the free address, pick a name, Get, or search. <b>Address bar</b> keeps the nudge alive after the chat scrolls on, and shows the real address once connected.',
+    '<b>One payload, two renderers.</b> The site-creation tool’s final result carries the free URL and the top 3 available names. The inline card renders it in the message; the pane widget renders the header line from the same data.',
+    '<b>Card</b> owns the moment the site goes live: see the free address, pick a name, Get, or search. <b>Header line</b> keeps the nudge alive after the chat scrolls on, and confirms the domain once connected.',
     '<b>Get</b> from either surface → “Continue on Wix” → Wix checkout in a new tab → back in ChatGPT both surfaces show “Setting up…” with Check status, then Connected.',
     '<b>Tools:</b> GetSuggestedDomains + CheckDomainAvailability (exist today), openExternal with Wix in redirect_domains, one app-only status/check tool for the widget.',
     'Open the <b>Spec</b> for states, copy rules, measurement and open questions.'
@@ -332,8 +332,8 @@ const HOW={
   ],
   pane:[
     '<b>The pane is our widget</b>, so this is widget UI, not model text. On pane open the widget calls an app-only tool (<code>_meta.ui.visibility: ["app"]</code>) that wraps GetSuggestedDomains(siteId) + CheckDomainAvailability and returns the best available name plus a short list.',
-    '<b>Address bar:</b> the free URL is already in the preview payload; showing it as an address bar makes the problem visible (it is 50+ characters) and gives the chip a natural home. In the “+ inline widget” variant, clicking the bar opens the same domain card the chat concept uses, rendered by the pane widget over the preview; one component, two hosts.',
-    '<b>Get:</b> <code>openExternal</code> to Wix checkout, same as in the chat. The pane’s refresh icon re-reads domain status after return; the address bar then shows the new domain.',
+    '<b>Header line:</b> one short selling sentence plus a CTA in the widget header; the free URL stays out (the open-in-new-tab arrow already covers it). In the “+ inline widget” variant, clicking the line opens the same domain card the chat concept uses, rendered by the pane widget over the preview; one component, two hosts.',
+    '<b>Get:</b> <code>openExternal</code> to Wix checkout, same as in the chat. The pane’s refresh icon re-reads domain status after return; the header line then shows the new domain as connected.',
     '<b>Independence:</b> works even when the model’s closing message says nothing about domains (as in the Harmony flow today), and stays visible as long as the pane is open.',
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
   ]
@@ -430,12 +430,15 @@ function renderPane(){
   const pane=$('#pane'), main=$('#main');
   pane.hidden=!S.paneOpen; main.classList.toggle('split',S.paneOpen&&!S.full); main.classList.toggle('full',S.paneOpen&&S.full);
   const isPane=S.concept==='pane', v=S.variant;
-  const curUrl=(S.stage==='connected'||S.stage==='pending')?S.chosen:FREE_URL;
   const isAddr=(isPane&&(v==='address'||v==='addressWidget'))||S.concept==='both';
   const barOpens=isAddr&&!(isPane&&v==='address');
   let head;
   if(isAddr){
-    head=`<div class="whead"><div class="abar ${barOpens?'':'static'}" ${barOpens?'data-act="drawer" role="button" tabindex="0" title="Site address"':'title="Site address"'}><span class="lock">🔒</span><span class="url ${(S.stage==='connected'||S.stage==='pending')?'clean':''}">${esc(curUrl)}</span>${S.stage==='connected'?'<span class="pill ok">Connected</span>':S.stage==='pending'?'<span class="pill neutral">Setting up…</span>':`<button class="getchip" data-act="get" data-d="${BEST}">${esc(C().chip)}</button>`}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    const line=S.stage==='connected'?`<span class="htx">${esc(S.chosen)}</span><span class="pill ok">Connected</span>`
+      :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
+      :`<span class="htx">${esc(C().hdr.text)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button>`;
+    const opens=barOpens&&S.stage==='idle';
+    head=`<div class="whead"><div class="abar ${opens?'':'static'}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
@@ -464,7 +467,7 @@ function renderOverlay(){
   const o=$('#overlay'); const ov=S.overlay;
   if(!ov){ o.innerHTML=''; return; }
   if(ov.kind==='spec'){
-    o.innerHTML=`<div class="ovl" data-act="ovl-bg"><div class="modal howmodal" style="width:min(760px,100%);max-height:100%;overflow-y:auto"><h3>Spec · domain suggestion after site creation (card + address bar)</h3>${SPEC.map(([h,b])=>`<div style="display:grid;gap:4px"><b style="font-size:13px">${h}</b><p style="margin:0;color:var(--muted);font-size:13.5px">${b}</p></div>`).join('')}<div class="bts"><button class="wbtn" data-act="ovl-close">Close</button></div></div></div>`; return; }
+    o.innerHTML=`<div class="ovl" data-act="ovl-bg"><div class="modal howmodal" style="width:min(760px,100%);max-height:100%;overflow-y:auto"><h3>Spec · domain suggestion after site creation (card + header line)</h3>${SPEC.map(([h,b])=>`<div style="display:grid;gap:4px"><b style="font-size:13px">${h}</b><p style="margin:0;color:var(--muted);font-size:13.5px">${b}</p></div>`).join('')}<div class="bts"><button class="wbtn" data-act="ovl-close">Close</button></div></div></div>`; return; }
   if(ov.kind==='how'){
     o.innerHTML=`<div class="ovl" data-act="ovl-bg"><div class="modal howmodal"><h3>How ${S.concept==='both'?'the recommended pair':'concept '+(S.concept==='chat'?'1':'2')} would work</h3><ul>${HOW[S.concept].map(x=>`<li>${x}</li>`).join('')}</ul><div class="bts"><button class="wbtn" data-act="ovl-close">Close</button></div></div></div>`; return; }
   if(ov.kind==='leave'){
