@@ -348,7 +348,6 @@ function domainBody(opts={}){
   if(S.stage==='connected') return `<div class="dbody">${connectedBlock()}<div class="dfoot"><button data-act="dash">Manage in Wix dashboard ↗</button></div></div>`;
   const list=opts.all?SUGG:SUGG.slice(0,3);
   return `<div class="dbody">
-    ${opts.noUrl?'':`<div class="urlrow"><span style="color:var(--faint)">🌐</span><code title="${FREE_URL}">${FREE_URL}</code><button class="ghost" data-act="copy">Copy</button></div>`}
     <div class="dsub">${opts.lead||esc(C().lead)}</div>
     ${domainRows(list)}
     <form class="dsearch" data-form="check"><input id="${opts.id||'dsearch'}" placeholder="${esc(C().placeholder)}" autocomplete="off"><button class="wbtn" type="submit">Check</button></form>
