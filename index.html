@@ -177,7 +177,7 @@ main.full{grid-template-columns:minmax(0,1fr)}
 .hpill .lnk{color:var(--wix);font-weight:600;background:none;padding:0 2px}
 .hpill .lnk:hover{text-decoration:underline}
 .hpill.sugg{gap:8px;padding:4px 6px 4px 12px}
-.hpill.sugg .spark{color:var(--ink);flex:none}
+.hpill .spark{color:var(--ink);flex:none}
 .hpill.sugg .sl{color:var(--muted)}
 .hpill.sugg .dbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .hpill.sugg .lnk{padding:0 6px}
@@ -475,7 +475,7 @@ function renderPane(){
     const line=S.stage==='connected'?`<span class="htx">${esc(S.chosen)}</span><span class="pill ok">Connected</span>`
       :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
       :S.hdr==='suggested'?`<div class="hpill sugg"><svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5c.5 5 2 8 4.2 9.7 1.6 1.3 4 2 7.3 2.3-3.3.3-5.7 1-7.3 2.3-2.2 1.7-3.7 4.7-4.2 9.7-.5-5-2-8-4.2-9.7C6.2 14.5 3.8 13.8.5 13.5c3.3-.3 5.7-1 7.3-2.3C10 9.5 11.5 6.5 12 1.5z"/></svg><span class="sl">Suggested for you</span><span class="dbox">${BEST}</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
-      :S.hdr==='pill'?`<div class="hpill"><span class="ico">🔗</span><span><u>${BEST}</u> is available!</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
+      :S.hdr==='pill'?`<div class="hpill"><svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5c.5 5 2 8 4.2 9.7 1.6 1.3 4 2 7.3 2.3-3.3.3-5.7 1-7.3 2.3-2.2 1.7-3.7 4.7-4.2 9.7-.5-5-2-8-4.2-9.7C6.2 14.5 3.8 13.8.5 13.5c3.3-.3 5.7-1 7.3-2.3C10 9.5 11.5 6.5 12 1.5z"/></svg><span><u>${BEST}</u> is available!</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
       :(S.hdr==='centerText'||S.hdr==='outline')?`<div class="hgrp ${S.hdr==='outline'?'outlined':''}"><span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="${S.hdr==='outline'?'lnk':'getchip'}" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='outline'?' Domain':''}</button></div>`
       :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'||S.hdr==='near'?' Domain':''}</button>`;
     const opens=barOpens&&S.stage==='idle';
