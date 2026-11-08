@@ -157,6 +157,10 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .abar.inline .getchip{margin-right:auto}
 .abar.center{justify-content:center}
 .abar.ctext .htx{text-align:center}
+.whead.tint{background:var(--wix-soft);border-top-color:transparent}
+.whead.tint .globe{font-size:15px;color:var(--muted)}
+.whead.tint .hpill{background:var(--card)}
+.whead.tint .hgrp.outlined{background:var(--card)}
 .hpill{display:inline-flex;align-items:center;gap:6px;background:var(--bubble);border-radius:999px;padding:6px 14px;font-size:13.5px;color:var(--ink);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .hpill .ico{color:var(--muted);font-size:12px}
 .hpill u{font-weight:600;text-underline-offset:2px}
@@ -307,15 +311,12 @@ const COPY={
 const C=()=>COPY[S.copy];
 const CONCEPTS={
   chat:{label:'1 · In the chat, right after the site is created',variants:{
-    card:{label:'Inline card in the live message',note:'Our inline widget (the same MCP App that draws the build progress) returns a domain card with the final result. It sits right under the “is live” line, above What’s included. Purchase opens Wix.'},
-    text:{label:'Text only · the model writes it',note:'No widget. The model calls GetSuggestedDomains(siteId) + CheckDomainAvailability once and rewrites the current plain sentence as a short list with links. Cheapest to ship.'},
-    followup:{label:'Follow-up message with reply chips',note:'The closing message stays as it is today. ChatGPT then adds one short follow-up and native reply chips; each chip sends a visible user message.'}
+    card:{label:'Inline card in the live message',note:'Our inline widget (the same MCP App that draws the build progress) returns a domain card with the final result. It sits right under the “is live” line, above What’s included. Purchase opens Wix.'}
   }},
   pane:{label:'2 · In the “Wix site” side pane',variants:{
     address:{label:'Domain line in the pane header',note:'The widget header carries one short selling line and a CTA (wording follows the Copy selector). No free URL: the header already has the open-in-new-tab arrow. The CTA goes straight to Wix checkout for the best name. The chat stays as it is today.'},
     addressWidget:{label:'Header line + inline widget on click',note:'Same header line. Clicking the line opens the domain widget over the site preview, the exact card used in the chat concept: same heading, names, badges, search and footer. The CTA still goes straight to checkout. The chat stays as it is today.'},
-    banner:{label:'Banner under the header',note:'A slim banner between the widget header and the live site: the best available name, Get it, More names, dismiss. The chat stays as it is today.'},
-    toast:{label:'Corner toast instead of “Built on Wix Headless”',note:'The bottom-right toast that today says “Built on Wix Headless” becomes the domain nudge. Smallest footprint; easiest to miss. The chat stays as it is today.'}
+    addressTint:{label:'Domain line in the pane header · tinted (banner colors)',note:'Same header line and CTA, but the header row takes the light-blue banner tint with a globe icon, so the domain nudge reads as a distinct strip rather than part of the chrome. The chat stays as it is today.'}
   }},
   both:{label:'3 · Both together (card + header line)',variants:{
     rec:{label:'Card in the chat + header line in the pane',note:'The inline card owns the moment the site goes live; the header line keeps the nudge and the CTA visible as long as the pane is open. One shared state: buy from either and both update.'}
@@ -446,7 +447,8 @@ function renderPane(){
   const pane=$('#pane'), main=$('#main');
   pane.hidden=!S.paneOpen; main.classList.toggle('split',S.paneOpen&&!S.full); main.classList.toggle('full',S.paneOpen&&S.full);
   const isPane=S.concept==='pane', v=S.variant;
-  const isAddr=(isPane&&(v==='address'||v==='addressWidget'))||S.concept==='both';
+  const isAddr=(isPane&&(v==='address'||v==='addressWidget'||v==='addressTint'))||S.concept==='both';
+  const tint=isPane&&v==='addressTint';
   const barOpens=isAddr&&!(isPane&&v==='address');
   let head;
   if(isAddr){
@@ -456,7 +458,7 @@ function renderPane(){
       :(S.hdr==='centerText'||S.hdr==='outline')?`<div class="hgrp ${S.hdr==='outline'?'outlined':''}"><span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button></div>`
       :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'?' Domain':''}</button>`;
     const opens=barOpens&&S.stage==='idle';
-    head=`<div class="whead"><div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':(S.hdr==='pill'||S.hdr==='centerText'||S.hdr==='outline')&&S.stage==='idle'?'center':S.hdr==='rightLong'&&S.stage==='idle'?'ctext':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead ${tint?'tint':''}">${tint&&S.stage==='idle'?'<span class="globe">🌐</span>':''}<div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':(S.hdr==='pill'||S.hdr==='centerText'||S.hdr==='outline')&&S.stage==='idle'?'center':S.hdr==='rightLong'&&S.stage==='idle'?'ctext':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
@@ -510,7 +512,7 @@ function renderBar(){
   const cs=$('#concept'); cs.innerHTML=Object.entries(CONCEPTS).map(([k,c])=>`<option value="${k}" ${k===S.concept?'selected':''}>${esc(c.label)}</option>`).join('');
   const vs=$('#variant'); vs.innerHTML=Object.entries(CONCEPTS[S.concept].variants).map(([k,v])=>`<option value="${k}" ${k===S.variant?'selected':''}>${esc(v.label)}</option>`).join('');
   const cp=$('#copy'); cp.innerHTML=Object.entries(COPY).map(([k,c])=>`<option value="${k}" ${k===S.copy?'selected':''}>${esc(c.label)}</option>`).join('');
-  $('#hdrwrap').hidden=!((S.concept==='pane'&&(S.variant==='address'||S.variant==='addressWidget'))||S.concept==='both'); $('#hdr').value=S.hdr;
+  $('#hdrwrap').hidden=!((S.concept==='pane'&&(S.variant==='address'||S.variant==='addressWidget'||S.variant==='addressTint'))||S.concept==='both'); $('#hdr').value=S.hdr;
   $('#cnote').textContent=CONCEPTS[S.concept].variants[S.variant].note;
   $('#panename').textContent='Wix site';
 }
