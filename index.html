@@ -113,7 +113,7 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 @keyframes bl{50%{opacity:1}}
 @media (prefers-reduced-motion: reduce){.typing i{animation:none}}
 /* domain card (chat) & drawer body (pane) share .dbody */
-.dcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:14px;display:grid;gap:12px;margin:4px 0}
+.dcard{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:14px;display:grid;gap:12px;margin:4px 0;width:100%;max-width:540px}
 .dbody{display:grid;gap:12px}
 .dhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .dhead b{font-size:14.5px}
@@ -163,6 +163,8 @@ main:not(.split) .thread{max-width:760px;width:100%;margin:0 auto}
 .abar.inline .getchip{margin-right:auto}
 .abar.center{justify-content:center}
 .abar.ctext .htx{text-align:center}
+.abar.near{justify-content:flex-end}
+.abar.near .htx{flex:0 1 auto;text-align:right}
 .whead.tint{background:var(--wix-soft);border-top-color:transparent}
 .whead.tint .globe{font-size:15px;color:var(--muted)}
 .whead.tint .hpill{background:var(--card)}
@@ -245,7 +247,7 @@ body.present .foot{display:none}
   <label>Concept <select id="concept"></select></label>
   <label>Variant <select id="variant"></select></label>
   <label>Copy <select id="copy"></select></label>
-  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="rightLong">A · Text centered · “Claim Domain” on the right</option><option value="pill">B · Centered pill (Harmony style)</option><option value="right">Text left · “Claim” on the right</option><option value="inline">Button next to the text</option><option value="centerText">Text + button, centered</option><option value="outline">Text + button in a thin outlined pill, centered</option></select></label>
+  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="rightLong">A · Text centered · “Claim Domain” on the right</option><option value="near">A2 · Text right next to “Claim Domain”</option><option value="pill">B · Centered pill (Harmony style)</option><option value="right">Text left · “Claim” on the right</option><option value="inline">Button next to the text</option><option value="centerText">Text + button, centered</option><option value="outline">Text + button in a thin outlined pill, centered</option></select></label>
   <label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <button class="b" data-act="how">How it works</button>
   <button class="b" data-act="spec">Spec</button>
@@ -370,7 +372,7 @@ let saved=null;
 /* ---------- helpers ---------- */
 function pill(s){ return s==='AVAILABLE'?'<span class="pill ok">Available</span>':s==='PREMIUM'?'<span class="pill prem">Premium</span>':s==='REGISTERED'?'<span class="pill bad">Taken</span>':'<span class="pill neutral">Checking…</span>'; }
 function statusFor(name){ const k=SUGG.find(x=>x.d===name); if(k) return k.s; if(!/\./.test(name)) return 'REGISTERED'; return /42|billiard|beer|bar/i.test(name)?'AVAILABLE':'REGISTERED'; }
-function domainRows(list){ const b=C().badges; return `<div class="dlist">${list.map(x=>`<div class="drow"><div class="dname"><b>${esc(x.d)}</b>${b&&b[x.d]?`<span class="badge">${esc(b[x.d])}</span>`:''}</div>${pill(x.s)}${x.s==='REGISTERED'?'<button class="wbtn" disabled>Taken</button>':`<button class="wbtn pri" data-act="get" data-d="${esc(x.d)}">${esc(C().btn)}</button>`}</div>`).join('')}</div>`; }
+function domainRows(list,showStatus){ const b=C().badges; return `<div class="dlist">${list.map(x=>`<div class="drow"><div class="dname"><b>${esc(x.d)}</b>${b&&b[x.d]?`<span class="badge">${esc(b[x.d])}</span>`:''}</div>${showStatus||x.s!=='AVAILABLE'?pill(x.s):''}${x.s==='REGISTERED'?'':`<button class="wbtn pri" data-act="get" data-d="${esc(x.d)}">Claim domain</button>`}</div>`).join('')}</div>`; }
 function connectedBlock(){ return `<div class="dstate"><span class="pill ok">✓ Connected</span><div style="display:grid;min-width:0"><b>${esc(S.chosen)}</b><span>Points to ${SITE}. DNS can take up to 48 hours; the free address keeps working until then.</span></div></div>`; }
 function pendingBlock(){ return `<div class="dstate" style="background:var(--soft)"><span class="pill neutral">Setting up…</span><div style="display:grid;min-width:0;flex:1"><b>${esc(S.chosen)}</b><span>${S.connectOwn?'Connecting your domain to':'Registered on Wix. Connecting to'} ${SITE}; usually minutes, up to 48 hours everywhere.</span></div><button class="wbtn" data-act="check-status">Check status</button></div>`; }
 function domainBody(opts={}){
@@ -382,13 +384,13 @@ function domainBody(opts={}){
     ${domainRows(list)}
     <form class="dsearch" data-form="check"><input id="${opts.id||'dsearch'}" placeholder="${esc(C().placeholder)}" autocomplete="off"><button class="wbtn" type="submit">Check</button></form>
     <div id="${(opts.id||'dsearch')}-res"></div>
-    <div class="dfoot">${opts.all?'':'<button data-act="more">Show more names</button>'}<button data-act="connect-own">${esc(C().own)}</button><span class="pay">${esc(C().pay)}</span></div>
+    <div class="dfoot">${opts.all?'':'<button data-act="more">Show more names</button>'}<button data-act="connect-own">${esc(C().own)}</button></div>
   </div>`;
 }
 
 /* the domain card: same markup in the chat and inside the pane */
 function chatCard(id){
-  return `<div class="dcard"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b><span class="pill neutral free">${esc(C().pill)}</span></div>${domainBody({id})}</div>`;
+  return `<div class="dcard"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b></div>${domainBody({id})}</div>`;
 }
 
 /* ---------- thread ---------- */
@@ -465,9 +467,9 @@ function renderPane(){
       :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
       :S.hdr==='pill'?`<div class="hpill"><span class="ico">🔗</span><span><u>${BEST}</u> is available!</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
       :(S.hdr==='centerText'||S.hdr==='outline')?`<div class="hgrp ${S.hdr==='outline'?'outlined':''}"><span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button></div>`
-      :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'?' Domain':''}</button>`;
+      :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'||S.hdr==='near'?' Domain':''}</button>`;
     const opens=barOpens&&S.stage==='idle';
-    head=`<div class="whead ${tint?'tint':''}">${tint&&S.stage==='idle'?'<span class="globe">🌐</span>':''}<div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':(S.hdr==='pill'||S.hdr==='centerText'||S.hdr==='outline')&&S.stage==='idle'?'center':S.hdr==='rightLong'&&S.stage==='idle'?'ctext':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead ${tint?'tint':''}">${tint&&S.stage==='idle'?'<span class="globe">🌐</span>':''}<div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':(S.hdr==='pill'||S.hdr==='centerText'||S.hdr==='outline')&&S.stage==='idle'?'center':S.hdr==='rightLong'&&S.stage==='idle'?'ctext':S.hdr==='near'&&S.stage==='idle'?'near':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
@@ -585,7 +587,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('abar')) { S.drawer=true; renderPane(); } if(e.key==='Escape'&&S.overlay){ S.overlay=null; renderOverlay(); } });
 document.addEventListener('submit',e=>{
   if(e.target.id==='composer'){ e.preventDefault(); const i=$('#chat-input'); const t=i.value.trim(); if(!t) return; i.value=''; handleSend(t); return; }
-  if(e.target.dataset.form==='check'){ e.preventDefault(); const inp=e.target.querySelector('input'); let d=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,''); if(!d) return; if(!/\./.test(d)) d+='.com'; const s=statusFor(d); const res=document.getElementById(inp.id+'-res'); if(res) res.innerHTML=domainRows([{d,s}]); }
+  if(e.target.dataset.form==='check'){ e.preventDefault(); const inp=e.target.querySelector('input'); let d=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,''); if(!d) return; if(!/\./.test(d)) d+='.com'; const s=Math.random()<0.5?'AVAILABLE':'REGISTERED'; const res=document.getElementById(inp.id+'-res'); if(res) res.innerHTML=domainRows([{d,s}],true); }
 });
 $('#concept').addEventListener('change',e=>{ S.concept=e.target.value; S.variant=Object.keys(CONCEPTS[S.concept].variants)[0]; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
 $('#copy').addEventListener('change',e=>{ S.copy=e.target.value; renderAll(); });
