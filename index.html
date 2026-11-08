@@ -176,6 +176,13 @@ main.full{grid-template-columns:minmax(0,1fr)}
 .hpill u{font-weight:600;text-underline-offset:2px}
 .hpill .lnk{color:var(--wix);font-weight:600;background:none;padding:0 2px}
 .hpill .lnk:hover{text-decoration:underline}
+.hpill.sugg{gap:8px;padding:4px 6px 4px 12px}
+.hpill.sugg .spark{color:var(--ink);flex:none}
+.hpill.sugg .sl{color:var(--muted)}
+.hpill.sugg .dbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.hpill.sugg .lnk{padding:0 6px}
+.hgrp.outlined .lnk{color:var(--wix);font-weight:600;font-size:13.5px;background:none;padding:0 8px 0 2px;white-space:nowrap}
+.hgrp.outlined .lnk:hover{text-decoration:underline}
 .hgrp{display:inline-flex;align-items:center;gap:12px;min-width:0}
 .hgrp .htx{flex:0 1 auto}
 .hgrp.outlined{border:1px solid color-mix(in srgb,var(--wix) 45%,var(--line));background:color-mix(in srgb,var(--bubble) 40%,var(--card));border-radius:999px;padding:4px 5px 4px 14px;gap:10px}
@@ -249,7 +256,7 @@ body.present .foot{display:none}
   <label>Concept <select id="concept"></select></label>
   <label>Variant <select id="variant"></select></label>
   <label>Copy <select id="copy"></select></label>
-  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="rightLong">A · Text centered · “Claim Domain” on the right</option><option value="near">A2 · Text right next to “Claim Domain”</option><option value="pill">B · Centered pill (Harmony style)</option><option value="right">Text left · “Claim” on the right</option><option value="inline">Button next to the text</option><option value="centerText">Text + button, centered</option><option value="outline">Text + button in a thin outlined pill, centered</option></select></label>
+  <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="rightLong">A · Text centered · “Claim Domain” on the right</option><option value="near">A2 · Text right next to “Claim Domain”</option><option value="pill">B · Centered pill (Harmony style)</option><option value="suggested">B2 · Pill with “Suggested for you” (Harmony style)</option><option value="right">Text left · “Claim” on the right</option><option value="inline">Button next to the text</option><option value="centerText">Text + button, centered</option><option value="outline">Text + button in a thin outlined pill, centered</option></select></label>
   <label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <button class="b" data-act="how">How it works</button>
   <button class="b" data-act="spec">Spec</button>
@@ -368,7 +375,7 @@ const HOW={
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
   ]
 };
-const S={concept:'both',variant:'rec',copy:'perfect',hdr:'outline',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
+const S={concept:'both',variant:'rec',copy:'perfect',hdr:'pill',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
 let saved=null;
 
 /* ---------- helpers ---------- */
@@ -467,11 +474,12 @@ function renderPane(){
   if(isAddr){
     const line=S.stage==='connected'?`<span class="htx">${esc(S.chosen)}</span><span class="pill ok">Connected</span>`
       :S.stage==='pending'?`<span class="htx sub">Setting up ${esc(S.chosen)}…</span><span class="pill neutral">Pending</span>`
+      :S.hdr==='suggested'?`<div class="hpill sugg"><svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5c.5 5 2 8 4.2 9.7 1.6 1.3 4 2 7.3 2.3-3.3.3-5.7 1-7.3 2.3-2.2 1.7-3.7 4.7-4.2 9.7-.5-5-2-8-4.2-9.7C6.2 14.5 3.8 13.8.5 13.5c3.3-.3 5.7-1 7.3-2.3C10 9.5 11.5 6.5 12 1.5z"/></svg><span class="sl">Suggested for you</span><span class="dbox">${BEST}</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
       :S.hdr==='pill'?`<div class="hpill"><span class="ico">🔗</span><span><u>${BEST}</u> is available!</span><button class="lnk" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)} Domain</button></div>`
-      :(S.hdr==='centerText'||S.hdr==='outline')?`<div class="hgrp ${S.hdr==='outline'?'outlined':''}"><span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}</button></div>`
+      :(S.hdr==='centerText'||S.hdr==='outline')?`<div class="hgrp ${S.hdr==='outline'?'outlined':''}"><span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="${S.hdr==='outline'?'lnk':'getchip'}" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='outline'?' Domain':''}</button></div>`
       :`<span class="htx"><b>${esc(C().hdr.lead)}</b><span class="sep"> – </span>${esc(C().hdr.fact)}</span><button class="getchip" data-act="get" data-d="${BEST}">${esc(C().hdr.cta)}${S.hdr==='rightLong'||S.hdr==='near'?' Domain':''}</button>`;
     const opens=barOpens&&S.stage==='idle';
-    head=`<div class="whead ${tint?'tint':''}">${tint&&S.stage==='idle'?'<span class="globe">🌐</span>':''}<div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':(S.hdr==='pill'||S.hdr==='centerText'||S.hdr==='outline')&&S.stage==='idle'?'center':S.hdr==='rightLong'&&S.stage==='idle'?'ctext':S.hdr==='near'&&S.stage==='idle'?'near':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
+    head=`<div class="whead ${tint?'tint':''}">${tint&&S.stage==='idle'?'<span class="globe">🌐</span>':''}<div class="abar ${opens?'':'static'} ${S.hdr==='inline'?'inline':(S.hdr==='pill'||S.hdr==='suggested'||S.hdr==='centerText'||S.hdr==='outline')&&S.stage==='idle'?'center':S.hdr==='rightLong'&&S.stage==='idle'?'ctext':S.hdr==='near'&&S.stage==='idle'?'near':''}" ${opens?'data-act="drawer" role="button" tabindex="0" title="Domain options"':''}>${line}</div><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   } else {
     head=`<div class="whead"><span class="nm">${SITE} | Beer &amp; Billiards</span><button class="dash" data-act="dash">Open dashboard</button><button class="ib" title="Refresh" data-act="refresh">↻</button><button class="ib" title="Open in new tab">↗</button></div>`;
   }
