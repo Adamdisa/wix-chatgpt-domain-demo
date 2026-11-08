@@ -395,7 +395,7 @@ function domainBody(opts={}){
     ${domainRows(list)}
     <form class="dsearch" data-form="check"><input id="${opts.id||'dsearch'}" placeholder="${esc(C().placeholder)}" autocomplete="off"><button class="wbtn" type="submit">Check</button></form>
     <div id="${(opts.id||'dsearch')}-res"></div>
-    <div class="dfoot">${opts.all?'':'<button data-act="more">Show more names</button>'}<button data-act="connect-own">${esc(C().own)}</button></div>
+    <div class="dfoot">${opts.all||S.card==='compact'?'':'<button data-act="more">Show more names</button>'}<button data-act="connect-own">${esc(C().own)}</button></div>
   </div>`;
 }
 
