@@ -256,6 +256,7 @@ body.present .foot{display:none}
   <label>Concept <select id="concept"></select></label>
   <label>Variant <select id="variant"></select></label>
   <label>Copy <select id="copy"></select></label>
+  <label>Card <select id="cardv"><option value="full">1 · Three names + search</option><option value="compact">2 · One name + “Show more options”</option></select></label>
   <label id="hdrwrap" hidden>Header CTA <select id="hdr"><option value="pill">1 · Centered pill (Harmony style)</option><option value="outline">2 · Text + button in a thin outlined pill, centered</option><option value="suggested">3 · Pill with “Suggested for you” (Harmony style)</option><option value="rightLong">4 · Text centered · “Claim Domain” on the right</option><option value="near">5 · Text right next to “Claim Domain”</option><option value="right">6 · Text left · “Claim” on the right</option><option value="inline">7 · Button next to the text</option><option value="centerText">8 · Text + button, centered</option></select></label>
   <label>Theme <select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <button class="b" data-act="how">How it works</button>
@@ -375,7 +376,7 @@ const HOW={
     '<b>Rules:</b> no price; dismissible; shown once per site (remember dismissal in widget state).'
   ]
 };
-const S={concept:'both',variant:'rec',copy:'perfect',hdr:'pill',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
+const S={concept:'both',variant:'rec',copy:'perfect',card:'full',cardOpen:false,hdr:'pill',stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,connectOwn:false,extra:[],paneOpen:true,full:false,overlay:null};
 let saved=null;
 
 /* ---------- helpers ---------- */
@@ -387,6 +388,7 @@ function pendingBlock(){ return `<div class="dstate" style="background:var(--sof
 function domainBody(opts={}){
   if(S.stage==='pending') return `<div class="dbody">${pendingBlock()}<div class="dfoot"><button data-act="dash">Manage in Wix dashboard ↗</button></div></div>`;
   if(S.stage==='connected') return `<div class="dbody">${connectedBlock()}<div class="dfoot"><button data-act="dash">Manage in Wix dashboard ↗</button></div></div>`;
+  if(S.card==='compact'&&!S.cardOpen&&!opts.all) return `<div class="dbody">${domainRows(SUGG.slice(0,1))}<div class="dfoot"><button data-act="expand">Show more options</button></div></div>`;
   const list=opts.all?SUGG:SUGG.slice(0,3);
   return `<div class="dbody">
     <div class="dsub">${opts.lead||esc(C().lead)}</div>
@@ -569,13 +571,14 @@ document.addEventListener('click',async e=>{
   const act=el.dataset.act; if(el.tagName==='A') e.preventDefault();
   switch(act){
     case 'how': S.overlay={kind:'how'}; renderOverlay(); break;
-    case 'reset': Object.assign(S,{stage:'idle',chosen:null,connectOwn:false,drawer:false,bannerGone:false,toastGone:false,extra:[],paneOpen:true,full:false,overlay:null}); renderAll(); break;
+    case 'reset': Object.assign(S,{cardOpen:false,stage:'idle',chosen:null,connectOwn:false,drawer:false,bannerGone:false,toastGone:false,extra:[],paneOpen:true,full:false,overlay:null}); renderAll(); break;
     case 'present': document.body.classList.toggle('present'); break;
     case 'fullview': S.full=!S.full; el.title=S.full?'Exit full view':'Enter full view'; renderPane(); break;
     case 'closepane': S.paneOpen=false; renderPane(); renderThread(); break;
     case 'openpane': S.paneOpen=true; renderPane(); renderThread(); break;
     case 'drawer': S.drawer=true; renderPane(); break;
     case 'close-drawer': S.drawer=false; renderPane(); break;
+    case 'expand': S.cardOpen=true; document.querySelectorAll('.dcard').forEach(card=>{ const b=card.querySelector('.dbody'); if(b) b.outerHTML=domainBody({id:card.closest('.drawer')?'ds':'cs'}); }); break;
     case 'more': { const card=el.closest('.dcard'); if(card){ const body=card.querySelector('.dbody'); body.outerHTML=domainBody({all:true,id:card.closest('.drawer')?'ds':'cs'}); } break; }
     case 'get': startGet(el.dataset.d); break;
     case 'connect-own': S.overlay={kind:'leave',connect:true}; renderOverlay(); break;
@@ -602,6 +605,7 @@ document.addEventListener('submit',e=>{
 $('#concept').addEventListener('change',e=>{ S.concept=e.target.value; S.variant=Object.keys(CONCEPTS[S.concept].variants)[0]; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
 $('#copy').addEventListener('change',e=>{ S.copy=e.target.value; renderAll(); });
 $('#hdr').addEventListener('change',e=>{ S.hdr=e.target.value; renderPane(); });
+$('#cardv').addEventListener('change',e=>{ S.card=e.target.value; S.cardOpen=false; renderAll(); });
 $('#variant').addEventListener('change',e=>{ S.variant=e.target.value; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
 $('#theme').addEventListener('change',e=>{ const v=e.target.value; if(v==='system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme',v); });
 renderAll();
