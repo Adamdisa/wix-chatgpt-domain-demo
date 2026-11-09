@@ -740,7 +740,7 @@ function clSwapWidget(){ const w=$('#cw'); if(w) w.outerHTML=clWidget(); }
 function clStart(){
   CL.timers.forEach(clearTimeout); CL.timers=[]; Object.assign(CL,{phase:'building',modal:false,open:false,cardOpen:false}); clRender();
   CL_STAT.forEach((s,i)=>{ if(i) CL.timers.push(setTimeout(()=>{ const el=$('#cstat'); if(el){ el.style.opacity=0; setTimeout(()=>{ el.textContent=s; el.style.opacity=1; },300); } },i*1800)); });
-  CL.timers.push(setTimeout(()=>{ CL.phase='done'; clSwapWidget(); const cw=$('#clcardwrap'); if(cw) cw.innerHTML=clCard(); },CL_STAT.length*1800));
+  CL.timers.push(setTimeout(()=>{ CL.phase='done'; clSwapWidget(); const cw=$('#clcardwrap'); if(cw){ cw.innerHTML=clCard(); const t=$('#cthread'); t.scrollTo({top:t.scrollHeight,behavior:'smooth'}); } },CL_STAT.length*1800));
 }
 function setHost(h){ const c=h==='claude'; document.body.classList.toggle('host-claude',c); $('#claude').hidden=!c; if(c) clStart(); else { CL.timers.forEach(clearTimeout); CL.timers=[]; } }
 $('#host').addEventListener('change',e=>setHost(e.target.value));
