@@ -716,9 +716,9 @@ const CL={phase:'building',modal:false,open:false,timers:[]};
 const CL_STAT=['Picking a warm, moody palette for the bar','Writing the tap list and a bar-food menu','Adding photos of the bar and the counter','Setting up an events page for live-music nights','Polishing the layout for mobile'];
 const SITEIMG=(document.querySelector('#view img.site')||{}).src||'';
 const SPARK='<svg class="spark" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5c.5 5 2 8 4.2 9.7 1.6 1.3 4 2 7.3 2.3-3.3.3-5.7 1-7.3 2.3-2.2 1.7-3.7 4.7-4.2 9.7-.5-5-2-8-4.2-9.7C6.2 14.5 3.8 13.8.5 13.5c3.3-.3 5.7-1 7.3-2.3C10 9.5 11.5 6.5 12 1.5z"/></svg>';
-function clBody(){
-  if(!CL.open) return `<div class="dbody">${domainRows(SUGG.slice(0,1))}<div class="dfoot"><button data-act="cl-expand">Show more options</button></div></div>`;
-  return `<div class="dbody"><div class="dsub">${esc(C().lead)}</div>${domainRows(SUGG.slice(0,3))}<form class="dsearch" data-form="check"><input id="cls" placeholder="${esc(C().placeholder)}" autocomplete="off"><button class="wbtn" type="submit">Check</button></form><div id="cls-res"></div><div class="dfoot"><button data-act="connect-own">${esc(C().own)}</button></div></div>`;
+function clBody(open=CL.open,id='cls',act='cl-expand'){
+  if(!open) return `<div class="dbody">${domainRows(SUGG.slice(0,1))}<div class="dfoot"><button data-act="${act}">Show more options</button></div></div>`;
+  return `<div class="dbody"><div class="dsub">${esc(C().lead)}</div>${domainRows(SUGG.slice(0,3))}<form class="dsearch" data-form="check"><input id="${id}" placeholder="${esc(C().placeholder)}" autocomplete="off"><button class="wbtn" type="submit">Check</button></form><div id="${id}-res"></div><div class="dfoot"><button data-act="connect-own">${esc(C().own)}</button></div></div>`;
 }
 function clModal(){ return `<div class="cmask" data-act="cl-mask"><div class="dcard cmodal" role="dialog" aria-modal="true" aria-label="Choose a domain"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b><button class="cmx" type="button" data-act="cl-close" aria-label="Close">×</button></div>${clBody()}</div></div>`; }
 function clWidget(){
@@ -732,13 +732,15 @@ function clRender(){
     <div class="cwix"><span class="wm">WIX</span>Wix</div>
     ${clWidget()}
     <div class="cans"><p>Your ${esc(SITE)} site is being built now in the Harmony Editor. It has a warm, moody bar look, a tap list and bar-food menu, and an events page for live-music nights.</p></div>
+    <div id="clcardwrap">${CL.phase==='done'?clCard():''}</div>
     <div class="cacts" aria-hidden="true"><span>⧉</span><span>👍</span><span>👎</span><span>↻</span></div>`;
 }
+function clCard(){ return `<div class="dcard" id="clcard"><div class="dhead"><span class="wixicon">WIX</span><b>${esc(C().heading)}</b></div>${clBody(CL.cardOpen,'clc','cl-cexpand')}</div>`; }
 function clSwapWidget(){ const w=$('#cw'); if(w) w.outerHTML=clWidget(); }
 function clStart(){
-  CL.timers.forEach(clearTimeout); CL.timers=[]; Object.assign(CL,{phase:'building',modal:false,open:false}); clRender();
+  CL.timers.forEach(clearTimeout); CL.timers=[]; Object.assign(CL,{phase:'building',modal:false,open:false,cardOpen:false}); clRender();
   CL_STAT.forEach((s,i)=>{ if(i) CL.timers.push(setTimeout(()=>{ const el=$('#cstat'); if(el){ el.style.opacity=0; setTimeout(()=>{ el.textContent=s; el.style.opacity=1; },300); } },i*1800)); });
-  CL.timers.push(setTimeout(()=>{ CL.phase='done'; clSwapWidget(); },CL_STAT.length*1800));
+  CL.timers.push(setTimeout(()=>{ CL.phase='done'; clSwapWidget(); const cw=$('#clcardwrap'); if(cw) cw.innerHTML=clCard(); },CL_STAT.length*1800));
 }
 function setHost(h){ const c=h==='claude'; document.body.classList.toggle('host-claude',c); $('#claude').hidden=!c; if(c) clStart(); else { CL.timers.forEach(clearTimeout); CL.timers=[]; } }
 $('#host').addEventListener('change',e=>setHost(e.target.value));
@@ -748,6 +750,7 @@ document.addEventListener('click',e=>{
     case 'cl-modal': CL.modal=true; clSwapWidget(); break;
     case 'cl-close': CL.modal=false; CL.open=false; clSwapWidget(); break;
     case 'cl-mask': if(e.target===el){ CL.modal=false; CL.open=false; clSwapWidget(); } break;
+    case 'cl-cexpand': { CL.cardOpen=true; const b=document.querySelector('#clcard .dbody'); if(b) b.outerHTML=clBody(true,'clc','cl-cexpand'); break; }
     case 'cl-expand': { CL.open=true; const b=document.querySelector('.cmodal .dbody'); if(b) b.outerHTML=clBody(); break; }
     case 'reset': if(document.body.classList.contains('host-claude')) clStart(); break;
   }
