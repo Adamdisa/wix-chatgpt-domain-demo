@@ -206,6 +206,14 @@ main.full{grid-template-columns:minmax(0,1fr)}
 .drawer>.close{position:absolute;top:4px;right:8px;padding:4px 8px;border-radius:8px;color:var(--muted)}
 .drawer>.close:hover{background:var(--hover)}
 .drawer .dcard{margin:0}
+.dcard{position:relative}
+.cpop{position:absolute;left:12px;right:12px;bottom:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:14px;display:grid;gap:10px;z-index:5}
+.cpop label{font-weight:600;font-size:14px}
+.cpop .crow{display:flex;gap:8px}
+.cpop .crow .wbtn{flex:none;white-space:nowrap}
+.cpop input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:9px 12px;font:inherit;background:var(--bg);color:var(--ink)}
+.cpop .cx{position:absolute;top:8px;right:10px;font-size:18px;line-height:1;color:var(--muted)}
+.cpop .cerr{color:#c0392b;font-size:12.5px}
 .abar.static{cursor:default}
 .abar.static:hover{border-color:var(--line)}
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:4}
@@ -385,6 +393,8 @@ function statusFor(name){ const k=SUGG.find(x=>x.d===name); if(k) return k.s; if
 function domainRows(list,showStatus){ const b=C().badges; return `<div class="dlist">${list.map(x=>`<div class="drow"><div class="dname"><b>${esc(x.d)}</b>${b&&b[x.d]?`<span class="badge">${esc(b[x.d])}</span>`:''}</div>${showStatus||x.s!=='AVAILABLE'?pill(x.s):''}${x.s==='REGISTERED'?'':`<button class="wbtn pri" data-act="get" data-d="${esc(x.d)}">Claim domain</button>`}</div>`).join('')}</div>`; }
 function connectedBlock(){ return `<div class="dstate"><span class="pill ok">✓ Connected</span><div style="display:grid;min-width:0"><b>${esc(S.chosen)}</b><span>Points to ${SITE}. DNS can take up to 48 hours; the free address keeps working until then.</span></div></div>`; }
 function pendingBlock(){ return `<div class="dstate" style="background:var(--soft)"><span class="pill neutral">Setting up…</span><div style="display:grid;min-width:0;flex:1"><b>${esc(S.chosen)}</b><span>${S.connectOwn?'Connecting your domain to':'Registered on Wix. Connecting to'} ${SITE}; usually minutes, up to 48 hours everywhere.</span></div><button class="wbtn" data-act="check-status">Check status</button></div>`; }
+const MSID='26bbab08-6926-49e4-a4be-bd29ad81fad7';
+function connectPop(){ return `<div class="cpop" role="dialog" aria-label="Connect your domain"><button class="cx" type="button" data-act="cpop-close" aria-label="Close">×</button><form data-form="connect" style="display:grid;gap:10px"><label for="cpop-in">Type in your domain here</label><div class="crow"><input id="cpop-in" placeholder="e.g. mydomain.com" autocomplete="off" spellcheck="false"><button class="wbtn pri" type="submit">Connect Domain</button></div><div class="cerr" hidden>Enter a domain like mydomain.com</div></form></div>`; }
 function domainBody(opts={}){
   if(S.stage==='pending') return `<div class="dbody">${pendingBlock()}<div class="dfoot"><button data-act="dash">Manage in Wix dashboard ↗</button></div></div>`;
   if(S.stage==='connected') return `<div class="dbody">${connectedBlock()}<div class="dfoot"><button data-act="dash">Manage in Wix dashboard ↗</button></div></div>`;
@@ -581,7 +591,8 @@ document.addEventListener('click',async e=>{
     case 'expand': S.cardOpen=true; document.querySelectorAll('.dcard').forEach(card=>{ const b=card.querySelector('.dbody'); if(b) b.outerHTML=domainBody({id:card.closest('.drawer')?'ds':'cs'}); }); break;
     case 'more': { const card=el.closest('.dcard'); if(card){ const body=card.querySelector('.dbody'); body.outerHTML=domainBody({all:true,id:card.closest('.drawer')?'ds':'cs'}); } break; }
     case 'get': startGet(el.dataset.d); break;
-    case 'connect-own': S.overlay={kind:'leave',connect:true}; renderOverlay(); break;
+    case 'connect-own': { const card=el.closest('.dcard'); if(card){ card.querySelector('.cpop')?.remove(); card.insertAdjacentHTML('beforeend',connectPop()); card.querySelector('#cpop-in').focus(); } else { S.overlay={kind:'leave',connect:true}; renderOverlay(); } break; }
+    case 'cpop-close': el.closest('.cpop')?.remove(); break;
     case 'wix-open': S.overlay={kind:'wix',d:S.overlay.d,connect:S.overlay.connect}; renderOverlay(); break;
     case 'wix-done': { const own=$('#own'); if(S.overlay.connect) S.chosen=(own&&own.value.trim())||'lilienblumbar.co.il'; S.overlay={kind:'done',d:S.chosen,connect:S.overlay.connect}; renderOverlay(); break; }
     case 'back-chatgpt': finishDone(); break;
@@ -597,9 +608,10 @@ document.addEventListener('click',async e=>{
     case 'dash': case 'noop': default: break;
   }
 });
-document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('abar')) { S.drawer=true; renderPane(); } if(e.key==='Escape'&&S.overlay){ S.overlay=null; renderOverlay(); } });
+document.addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.target.classList.contains('abar')) { S.drawer=true; renderPane(); } if(e.key==='Escape'&&document.querySelector('.cpop')){ document.querySelectorAll('.cpop').forEach(x=>x.remove()); return; } if(e.key==='Escape'&&S.overlay){ S.overlay=null; renderOverlay(); } });
 document.addEventListener('submit',e=>{
   if(e.target.id==='composer'){ e.preventDefault(); const i=$('#chat-input'); const t=i.value.trim(); if(!t) return; i.value=''; handleSend(t); return; }
+  if(e.target.dataset.form==='connect'){ e.preventDefault(); const inp=e.target.querySelector('input'); const d=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*$/,''); const err=e.target.querySelector('.cerr'); if(!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(d)){ err.hidden=false; return; } err.hidden=true; window.open(`https://manage.wix.com/dashboard/${MSID}/add-domain/results?q=${encodeURIComponent(d)}&invoke=true`,'_blank','noopener'); return; }
   if(e.target.dataset.form==='check'){ e.preventDefault(); const inp=e.target.querySelector('input'); let d=inp.value.trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/.*$/,''); if(!d) return; if(!/\./.test(d)) d+='.com'; const s=Math.random()<0.5?'AVAILABLE':'REGISTERED'; const res=document.getElementById(inp.id+'-res'); if(res) res.innerHTML=domainRows([{d,s}],true); }
 });
 $('#concept').addEventListener('change',e=>{ S.concept=e.target.value; S.variant=Object.keys(CONCEPTS[S.concept].variants)[0]; Object.assign(S,{stage:'idle',chosen:null,drawer:false,bannerGone:false,toastGone:false,extra:[],overlay:null}); renderAll(); });
