@@ -301,7 +301,7 @@ body.host-claude .app,body.host-claude .chatonly,body.host-claude #cnote{display
 :root[data-theme="dark"] .cw.build{background:linear-gradient(180deg,#25283a,#1f2231)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cw.build{background:linear-gradient(180deg,#25283a,#1f2231)}}
 .cw.build b{font-weight:500;font-size:15px;color:var(--ink);margin-top:10px}
-.cw.build .cstat{font-size:12.5px;color:var(--muted);min-height:1.5em;transition:opacity .35s}
+.cw.build .cstat{font-size:12.5px;color:var(--muted);min-height:1.5em;transition:opacity .15s}
 .collage{position:relative;width:260px;height:150px}
 .mini{position:absolute;border-radius:10px;box-shadow:0 8px 22px rgba(30,40,90,.18);overflow:hidden;animation:mfloat 6s ease-in-out infinite}
 .mini::before{content:"";position:absolute;left:10%;right:10%;top:9%;height:7%;border-radius:4px;background:rgba(255,255,255,.55)}
@@ -739,8 +739,8 @@ function clCard(){ return `<div class="dcard" id="clcard"><div class="dhead"><sp
 function clSwapWidget(){ const w=$('#cw'); if(w) w.outerHTML=clWidget(); }
 function clStart(){
   CL.timers.forEach(clearTimeout); CL.timers=[]; Object.assign(CL,{phase:'building',modal:false,open:false,cardOpen:false}); clRender();
-  CL_STAT.forEach((s,i)=>{ if(i) CL.timers.push(setTimeout(()=>{ const el=$('#cstat'); if(el){ el.style.opacity=0; setTimeout(()=>{ el.textContent=s; el.style.opacity=1; },300); } },i*1800)); });
-  CL.timers.push(setTimeout(()=>{ CL.phase='done'; clSwapWidget(); const cw=$('#clcardwrap'); if(cw){ cw.innerHTML=clCard(); const t=$('#cthread'); t.scrollTo({top:t.scrollHeight,behavior:'smooth'}); } },CL_STAT.length*1800));
+  CL_STAT.forEach((s,i)=>{ if(i) CL.timers.push(setTimeout(()=>{ const el=$('#cstat'); if(el){ el.style.opacity=0; setTimeout(()=>{ el.textContent=s; el.style.opacity=1; },150); } },i*560)); });
+  CL.timers.push(setTimeout(()=>{ CL.phase='done'; clSwapWidget(); const cw=$('#clcardwrap'); if(cw){ cw.innerHTML=clCard(); const t=$('#cthread'); t.scrollTo({top:t.scrollHeight,behavior:'smooth'}); } },CL_STAT.length*560));
 }
 function setHost(h){ const c=h==='claude'; document.body.classList.toggle('host-claude',c); $('#claude').hidden=!c; if(c) clStart(); else { CL.timers.forEach(clearTimeout); CL.timers=[]; } }
 $('#host').addEventListener('change',e=>setHost(e.target.value));
